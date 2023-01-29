@@ -1,0 +1,34 @@
+---
+- name: Install OpenVPN
+  hosts: localhost
+  become: true
+  vars:
+    openvpn_version: 2.4.9-1ubuntu1
+  tasks:
+  - name: Update package lists
+    apt:
+      update_cache: true
+
+  - name: Install OpenVPN
+    apt:
+      name: openvpn
+#      version: "{{ openvpn_version }}"
+       
+
+  - name: Copy OpenVPN server config
+    template:
+      src: server.conf.j2
+      dest: /etc/openvpn/server.conf
+
+  - name: Enable IP forwarding
+    sysctl:
+      name: net.ipv4.ip_forward
+      value: 1
+      state: present
+      sysctl_set: yes
+
+  - name: Enable OpenVPN service
+    systemd:
+      name: openvpn@server
+      state: started
+      enabled: yes
